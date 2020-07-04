@@ -3,6 +3,9 @@ console.log(
 	'Inscreva-se no canal :D https://www.youtube.com/channel/UCzR2u5RWXWjUh7CwLSvbitA'
 );
 
+const som_Hit = new Audio();
+som_Hit.src = './efeitos/hit.wav';
+
 const sprites = new Image();
 sprites.src = './sprites.png';
 
@@ -80,35 +83,68 @@ const chao = {
 	},
 };
 
-const flappyBird = {
-	spriteX: 0,
-	spriteY: 0,
-	largura: 33,
-	altura: 24,
-	x: 10,
-	y: 50,
-	gravidade: 0.25,
-	velocidade: 0,
-	atualiza() {
-		flappyBird.velocidade += flappyBird.gravidade;
-		flappyBird.y += flappyBird.velocidade;
-	},
-	desenha() {
-		// Sim, desenha() é uma função, assim como function desenha()!
-		/* ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) s=source image | d = destination canvas*/
-		contexto.drawImage(
-			sprites,
-			flappyBird.spriteX,
-			flappyBird.spriteY, // Sprite X, Sprite Y
-			flappyBird.largura,
-			flappyBird.altura, // Sprite Width (largura), Sprite Height(altura)
-			flappyBird.x,
-			flappyBird.y, // Local onde vai aparacer o sprite no canvas
-			flappyBird.largura,
-			flappyBird.altura // Tamanho do sprite dentro do canvas
-		);
-	},
-};
+function fazColisao(flappyBird, chao) {
+	const flappyBirdY = flappyBird.y + flappyBird.altura;
+	const chaoY = chao.y;
+
+	if (flappyBirdY >= chaoY) {
+		return true;
+	}
+
+	return false;
+}
+
+function criaFlappyBird() {
+	const flappyBird = {
+		spriteX: 0,
+		spriteY: 0,
+		largura: 33,
+		altura: 24,
+		x: 10,
+		y: 50,
+		pulo: 4.6,
+		pula() {
+			console.log('devo pular');
+			console.log('[antes]', flappyBird.velocidade);
+			flappyBird.velocidade = -flappyBird.pulo;
+			console.log('[depois]', flappyBird.velocidade);
+		},
+		gravidade: 0.25,
+		velocidade: 0,
+		atualiza() {
+			if (fazColisao(flappyBird, chao)) {
+				console.log('Fez colisão');
+				som_Hit.play();
+
+				setTimeout(() => {
+					mudaParaTela(Telas.INICIO);
+				}, 500);
+
+				return;
+			}
+
+			flappyBird.velocidade += flappyBird.gravidade;
+			flappyBird.y += flappyBird.velocidade;
+		},
+		desenha() {
+			// Sim, desenha() é uma função, assim como function desenha()!
+			/* ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) s=source image | d = destination canvas*/
+			contexto.drawImage(
+				sprites,
+				flappyBird.spriteX,
+				flappyBird.spriteY, // Sprite X, Sprite Y
+				flappyBird.largura,
+				flappyBird.altura, // Sprite Width (largura), Sprite Height(altura)
+				flappyBird.x,
+				flappyBird.y, // Local onde vai aparacer o sprite no canvas
+				flappyBird.largura,
+				flappyBird.altura // Tamanho do sprite dentro do canvas
+			);
+		},
+	};
+
+	return flappyBird;
+}
 
 const mensagemGetReady = {
 	sX: 134,
@@ -135,17 +171,26 @@ const mensagemGetReady = {
 //
 // Telas
 //
+const globais = {};
+
 let telaAtiva = {};
 function mudaParaTela(novaTela) {
 	telaAtiva = novaTela;
+
+	if (telaAtiva.inicializa) {
+		telaAtiva.inicializa();
+	}
 }
 
 const Telas = {
 	INICIO: {
+		inicializa() {
+			globais.flappyBird = criaFlappyBird();
+		},
 		desenha() {
 			planoDeFundo.desenha();
 			chao.desenha();
-			flappyBird.desenha();
+			globais.flappyBird.desenha();
 			mensagemGetReady.desenha();
 		},
 		click() {
@@ -159,10 +204,13 @@ Telas.JOGO = {
 	desenha() {
 		planoDeFundo.desenha();
 		chao.desenha();
-		flappyBird.desenha();
+		globais.flappyBird.desenha();
+	},
+	click() {
+		globais.flappyBird.pula();
 	},
 	atualiza() {
-		flappyBird.atualiza();
+		globais.flappyBird.atualiza();
 	},
 };
 
