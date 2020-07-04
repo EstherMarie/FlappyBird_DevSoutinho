@@ -110,12 +110,65 @@ const flappyBird = {
 	},
 };
 
+const mensagemGetReady = {
+	sX: 134,
+	sY: 0,
+	w: 174,
+	h: 152,
+	x: canvas.width / 2 - 174 / 2,
+	y: 50,
+	desenha() {
+		contexto.drawImage(
+			sprites,
+			mensagemGetReady.sX,
+			mensagemGetReady.sY,
+			mensagemGetReady.w,
+			mensagemGetReady.h,
+			mensagemGetReady.x,
+			mensagemGetReady.y,
+			mensagemGetReady.w,
+			mensagemGetReady.h
+		);
+	},
+};
+
+//
+// Telas
+//
+let telaAtiva = {};
+function mudaParaTela(novaTela) {
+	telaAtiva = novaTela;
+}
+
+const Telas = {
+	INICIO: {
+		desenha() {
+			planoDeFundo.desenha();
+			chao.desenha();
+			flappyBird.desenha();
+			mensagemGetReady.desenha();
+		},
+		atualiza() {},
+	},
+};
+
+Telas.JOGO = {
+	desenha() {
+		planoDeFundo.desenha();
+		chao.desenha();
+		flappyBird.desenha();
+	},
+	atualiza() {
+		flappyBird.atualiza();
+	},
+};
+
 function loop() {
-	flappyBird.atualiza();
-	planoDeFundo.desenha();
-	chao.desenha();
-	flappyBird.desenha();
+	telaAtiva.desenha();
+	telaAtiva.atualiza();
 
 	requestAnimationFrame(loop);
 }
+
+mudaParaTela(Telas.INICIO);
 loop();
